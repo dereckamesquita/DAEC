@@ -1,6 +1,7 @@
 # DAEC
 
 ## Finance
+Esta rama es trabajada por Dereck Amesquita y Brandon Gil.
 Los principales temas que se trabajaran son:
 - Portfolio Returns
 - Risk
