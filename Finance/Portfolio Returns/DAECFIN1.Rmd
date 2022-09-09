@@ -1,0 +1,135 @@
+---
+title: "Retornos y Portafolio"
+author: "Dereck Amesquita & Brandon Gil - DAEC Consultoría"
+date: "Agosto - 2022"
+output:
+  pdf_document: default
+  html_notebook: default
+  html_document:
+    df_print: paged
+---
+```{r, echo= FALSE, out.width="30%", fig.align='center'}
+knitr::include_graphics("daec.jpeg")
+```
+
+
+
+## Resumen
+
+# Motivación
+
+
+
+
+Librerías necesarias :
+```{r message=FALSE, warning=FALSE, results='hide'}
+library("quantmod")
+library('dplyr')
+```
+*Recuerda que si no tienes instaladas estas librerias deberas usar, por ejemplo: install.packages("WDI")*
+
+La demanda de datos estadísticos de buena calidad sigue aumentando. Las estadísticas oportunas y confiables son insumos clave para la amplia estrategia de desarrollo. Las mejoras en la calidad y cantidad de datos sobre todos los aspectos del desarrollo son esenciales si queremos lograr el objetivo de un mundo sin pobreza.
+```{r}
+```
+
+
+```{r}
+data <- data.frame (a = c (88, 85, 82, 97, 67, 77, 74, 86, 81, 95), b = c (77, 88, 85, 76, 81, 82, 88, 91, 92, 99), c = c (67, 68, 68, 74, 74, 76, 76, 77, 78, 84))
+sapply (data, function (x) sd (x) / mean (x) * 100 )
+```
+
+
+# Importación de data
+
+```{r}
+getSymbols(c('BLK','AAPL','TSLA'), 
+           src = "yahoo", 
+           from = "2018-01-01", 
+           to = "2022-07-30", 
+           periodicity = "daily")
+```
+
+```{r}
+chartSeries(AAPL, TA=NULL)
+chartSeries(TSLA, TA=NULL)
+chartSeries(BLK, TA=NULL)
+
+```
+
+
+
+```{r}
+apple = Delt(AAPL[,6])
+names(apple) = "APPLE"
+head(apple)
+blk = Delt(BLK[,6])
+names(blk) = "BLK"
+head(blk)
+tesla = Delt(TSLA[,6])
+names(tesla) = "TSLA"
+head(tesla)
+```
+
+```{r}
+retornos = cbind(tesla,blk,apple)
+head(retornos)
+retornos = retornos[-1,]
+head(retornos)
+
+```
+
+
+```{r}
+options(scipen = 999) #Evitamos notación cientifica, pero con 0 obtenemos el default
+i.tesla = 50000
+i.blk = 30000
+i.apple = 20000
+i.total = i.tesla + i.blk + i.apple
+```
+
+Calculo de pesos
+
+```{r}
+(w.tesla = i.tesla / i.total)
+(w.apple = i.apple / i.total)
+(w.blk = i.blk / i.total)
+```
+
+Retorno de portafolios
+
+```{r}
+ret.por = 1 + retornos
+head(ret.por)
+```
+
+Retorno acumulado
+
+```{r}
+retor.acum = cumprod(ret.por)
+tail(retor.acum) # Esta es una suma directa periodo a periodo, pero recordemos que puede no ser eficiente, puesto que caidas grandes en un periodo no son compensables con otro periodo.
+```
+Restamos el 1 que sumamos anteriormente, y lo haremos en el ultimo periodo.
+```{r}
+nrow(retor.acum)
+(retor.acum2 = retor.acum[nrow(retor.acum)] - 1)
+```
+
+Calculando el retorno del portafolio
+
+```{r}
+(ret.final <- as.numeric(w.tesla*retor.acum2$TSLA + w.blk * retor.acum2$BLK + w.apple * retor.acum2$APPLE))
+```
+
+Es decir, en todo este tiempo el rendimiento de nuestro portafolio seria de 718%
+
+
+
+
+
+
+
+
+
+
+
+
