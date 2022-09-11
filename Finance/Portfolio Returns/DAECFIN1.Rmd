@@ -25,18 +25,12 @@ Librerías necesarias :
 ```{r message=FALSE, warning=FALSE, results='hide'}
 library("quantmod")
 library('dplyr')
+library("anytime")
 ```
 *Recuerda que si no tienes instaladas estas librerias deberas usar, por ejemplo: install.packages("WDI")*
 
 La demanda de datos estadísticos de buena calidad sigue aumentando. Las estadísticas oportunas y confiables son insumos clave para la amplia estrategia de desarrollo. Las mejoras en la calidad y cantidad de datos sobre todos los aspectos del desarrollo son esenciales si queremos lograr el objetivo de un mundo sin pobreza.
-```{r}
-```
 
-
-```{r}
-data <- data.frame (a = c (88, 85, 82, 97, 67, 77, 74, 86, 81, 95), b = c (77, 88, 85, 76, 81, 82, 88, 91, 92, 99), c = c (67, 68, 68, 74, 74, 76, 76, 77, 78, 84))
-sapply (data, function (x) sd (x) / mean (x) * 100 )
-```
 
 
 # Importación de data
@@ -123,13 +117,118 @@ Calculando el retorno del portafolio
 Es decir, en todo este tiempo el rendimiento de nuestro portafolio seria de 718%
 
 
+# Usando matrices
+
+$$Rp = W^{t}R$$
+Donde $W^{t}$ es la transpuesta de la matriz de pesos, la cual se transforma para poder ser multiplicada con la matriz de rendimientos.
+
+```{r}
+pesos = c(w.apple, w.blk, w.tesla)
+# Creando la matriz de pesos
+(mat.pes = matrix(pesos,nrow=1)) #1 es el numero de filas
+# Creando la matriz de rendimientos
+(mat.ret = matrix(retor.acum2,nrow=3)) #Ahora le decimos que divida en tres filas.
+```
+Si necesitamos convertir una matriz a su transpuesta podemos usar t(matriz).
+
+Ahora vamos a calcular el retorno del portafolio:
+```{r}
+(rpmatrix = mat.pes %*% mat.ret)
+
+```
 
 
+# Time-Weighted Rate of Return
+$$TWRR =  \prod_{t=1}^{T} (1+HPR_t)$$
+
+## Holding Period Return 
+$$HPR_{t} = \frac{V_t + C_t - V_{t-1}}{V_{t-1}}$$
+Donde, $V_t$ es el valor de mercado del portafolio en el tiempo $t$. $C_t$, es el cashflow de dicho periodo.
+
+### Introduciendo la data
+
+```{r}
+fecha = anydate(c("2020/12/31", "2021/03/31","2021/06/30", "2021/07/31", 
+                  "2021/09/30", "2021/12/31")) 
+mv = c(2000000, 1950000, 2000000, 2220000, 2400000, 2500000)
+cf = c(0, 0, 0, 20000, 400, -5000) 
+
+cbind(data.frame(fecha), mv, cf)
 
 
+```
+```{r}
+(hpr = rep(0, length(mv)))
+```
 
 
+```{r}
+hpr = rep(0, length(cf))
+for (i in (2 : (length(cf)))) {
+  hpr[i] = (mv[i] - mv[i-1] + cf[i]) / mv[i - 1]
+}
+cbind(data.frame(fecha), mv, cf,hpr)
+```
 
+```{r}
+(hpr2 = 1+hpr)
+# Obteniendo el TWRR mediante dos formas
+#Forma 1 Acumulando los productos
+(cum.ret = cumprod(hpr2)) # Acumulamos los rendimientos multiplicando cada elemento
+(cum.ret[length(cf)] -1 ) # Accedemos al ultimo valor y le quitamos 1
+
+# Forma 2 Multiplicando
+(prod(hpr2))-1 #Multiplicamos todos los elementos y le restamos 1 
+```
+
+
+# Money-Weighted Rate of Return
+
+Es algo aproximado a una TIR o una IRR (Internal Rate of Return) pero de portafolio. 
+Congela el valor presente neto del portafolio (VAN) (Valor presente menos los costos de inversión) a cero.
+
+$$0 = \sum_{t=0}^{T}\frac{C_t}{(1+MWRR)^{t}}$$
+
+Podemos trabajarlo si: 
+$$a = (1+MWRR)^{-t}$$
+Podemos obtener: 
+$$0 = C_0 + a C_1 + a^{2} C_2 + ... +a^{n}C_n$$
+Creamos la función del valor presente: 
+```{r}
+pv = function(cf, dates, r){
+  t = as.numeric((dates - dates[1]) / 365) 
+  pv_factor = (1 + r)^-t
+  pv = cf * pv_factor
+  value = sum(pv)
+  return(value)
+}
+```
+
+```{r}
+mwrr = function(cf, dates, guess) { 
+  delta.x = 0.01
+  tol = 0.00000001
+  cur.x =guess
+  iter = 0
+  for (i in 1:1000) {
+    fx = pv(cf, dates, cur.x)
+    cur.x.delta = cur.x - delta.x
+    fx.delta = pv(cf, dates, cur.x.delta)
+    dx = (fx - fx.delta) / delta.x 
+    cur.x = cur.x - (fx/dx)
+    iter = iter+1
+    cat("En la iteracíón", iter, "MWRR es igual a", cur.x, "\n") #Funciona como Print
+    if (abs(fx) < tol) break
+  }
+}
+      
+```
+
+```{r}
+cf = c(-100000, 104000)
+dates = anydate(c("2018/12/31", "2019/12/31"))
+mwrr(cf, dates, 0.1)
+```
 
 
 
