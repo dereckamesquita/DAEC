@@ -17,18 +17,12 @@ knitr::include_graphics("daec.jpeg")
 
 ## Resumen
 
-El siguiente texto tiene por objetivo mostrar una guía que permita al lector entender como implementar mediante R, cálculos aplicados al rendimiento de portafolio.
 
 ## Temas
 
-- Gráficos de precios
-- Retornos de portafolio
-- Retornos mediante matrices
-- Time-Weighted Rate of Return
-- Money-Weighted Rate of Return
+- 
 
 
-Primero instalamos las librerias necesarias en este caso la que me llamó más la atención fue la librería quantmod que nos facilitará al momento de hacer el siguiente trabajo. Esta librería nos ayuda bastante a la vosualizacion de datos. Principamente usada para análisis cuantitativo
 
 
 Librerías necesarias :
@@ -42,26 +36,14 @@ library("anytime")
 Es importante recordar que cada vez que ya hayamos descargado cualquier librería tenemos que activarla para usarla. 
 
 
-# Importación de data
+# Trade Off del Riesgo
 
-#Para este ejemplo decidimos trabajr con BlackRock, Apple y Tesla que son empresas que sean vuelto populares los últimos meses. 
-
-
-Lo primero que tenemos que hacer es importar la data necesaria, en este caso usaremos Yahoo Finance, de donde extraeremos data histórica desde el 2018-01-01 hasta el 2022-07-30.
 ```{r}
 getSymbols(c('BLK','AAPL','TSLA'), 
            src = "yahoo", 
            from = "2018-01-01", 
            to = "2022-07-30", 
            periodicity = "daily")
-```
-Con el comando ChartSeries que viene incluido en la librería "quantmod" podemos ver la evolución de las acciones en el mercado.
-
-```{r out.width="50%", fig.align='center'}
-chartSeries(AAPL, TA=NULL)
-chartSeries(TSLA, TA=NULL)
-chartSeries(BLK, TA=NULL)
-
 ```
 
 ## Trabajando el retorno de los portafolios
@@ -81,10 +63,9 @@ tesla = Delt(TSLA[,6])
 names(tesla) = "TSLA"
 head(tesla)
 ```
-Por usar Delt, el primer valor resulta como NA, puesto que, para calcular variaciones, se necesitan como mínimo dos periodos.
 
 ```{r}
-retornos = cbind(tesla,blk,apple)
+retornos = cbind(tesla,apple)
 head(retornos)
 retornos = retornos[-1,]
 head(retornos)
@@ -101,19 +82,11 @@ i.apple = 20000
 i.total = i.tesla + i.blk + i.apple
 ```
 
-## Cálculo de pesos
-
-```{r}
-(w.tesla = i.tesla / i.total)
-(w.apple = i.apple / i.total)
-(w.blk = i.blk / i.total)
-```
-
-Retorno de portafolios
 
 ```{r}
 ret.por = 1 + retornos
-head(ret.por)
+retor.acum = cumprod(ret.por)
+tail(retor.acum) # Esta es una suma de multiplicación directa periodo a periodo
 ```
 
 Retorno acumulado del portafolio

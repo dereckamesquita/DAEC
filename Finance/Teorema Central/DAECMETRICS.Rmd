@@ -1,0 +1,80 @@
+---
+title: " Teorema Central del Limite"
+author: "Dereck Amesquita & Brandon Gil - DAEC Consultoría"
+date: "Agosto - 2022"
+output:
+  pdf_document: default
+  html_notebook: default
+  html_document:
+    df_print: paged
+---
+```{r, echo= FALSE, out.width="30%", fig.align='center'}
+knitr::include_graphics("daec.jpeg")
+```
+
+
+
+
+## Resumen
+
+El siguiente texto tiene por objetivo mostrar una guía que permita al lector entender como implementar mediante R, cálculos aplicados al rendimiento de portafolio.
+
+## Temas
+
+- Gráficos de precios
+- Retornos de portafolio
+- Retornos mediante matrices
+- Time-Weighted Rate of Return
+- Money-Weighted Rate of Return
+
+
+Primero instalamos las librerias necesarias en este caso la que me llamó más la atención fue la librería quantmod que nos facilitará al momento de hacer el siguiente trabajo. Esta librería nos ayuda bastante a la vosualizacion de datos. Principamente usada para análisis cuantitativo
+
+
+Librerías necesarias :
+
+*Recuerda que si no tienes instaladas estas librerias deberas usar, por ejemplo: install.packages("WDI")*
+
+
+```{r}
+data <- read.csv("~/Documents/GitHub/DAEC/Finance/Teorema Central/california_housing_test.csv")
+```
+
+```{r}
+lat = data['median_house_value']
+lat <- as.integer(unlist(lat))
+
+```
+
+```{r}
+hist(lat)
+```
+
+```{r}
+num = 1000
+
+for (i in (1:num)) {
+  prom = mean(sample(lat,30))
+  num[i] = prom
+
+}
+
+```
+```{r}
+hist(num)
+```
+
+
+
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
